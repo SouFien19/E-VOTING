@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
+const middleware = require('./middleware/auth');
 
 dotenv.config();
 
@@ -16,22 +17,19 @@ app.use(express.json());
 // Use authentication routes
 app.use('/api/auth', authRoutes);
 
+// Error handling middleware
+app.use(middleware.errorHandler);
+
 mongoose.connect(MONGODB_URI)
-  .then(() => {
+.then(() => {
     console.log('Connected to the database');
-
     // Start the server only after the database connection is established
-    const server = app.listen(PORT, 'localhost', () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
+    app.listen(PORT, 'localhost', () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
     });
-
-    // Optional: Handle server errors
-    server.on('error', (error) => {
-      console.error('Server error:', error);
-    });
-  })
-  .catch((error) => {
+})
+.catch((error) => {
     console.error('Error connecting to the database:', error);
     // Optionally: Exit the process if the database connection fails
     process.exit(1);
-  });
+});
