@@ -1,19 +1,26 @@
-const { Web3 } = require('web3');
+const Web3 = require('web3');
+const { abi, evm } = require('./UserAuth.json'); // ABI and Bytecode from Truffle or Hardhat
 
-    // Initialize Web3 with the Infura URL
-    const web3 = new Web3(process.env.INFURA_URL);
+const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/6fc75e9b892341f79f2744c15b3c77d6'));
+const contract = new web3.eth.Contract(abi, '6fc75e9b892341f79f2744c15b3c77d6');
 
-    const verifyTransaction = async (address, transactionHash) => {
-        try {
-            // Fetch the transaction details
-            const transaction = await web3.eth.getTransaction(transactionHash);
-            
-            // Check if the transaction exists and its 'from' address matches the provided address
-            return transaction && transaction.from.toLowerCase() === address.toLowerCase();
-        } catch (error) {
-            console.error('Error verifying transaction:', error);
-            return false;
-        }
-    };
+const authenticateUser = async (userAddress) => {
+    try {
+        await contract.methods.authenticateUser(userAddress).send({ from: 'soufienlabiadh19@gmail.com' });
+        console.log('User authenticated');
+    } catch (error) {
+        console.error('Error authenticating user:', error);
+    }
+};
 
-    module.exports = { verifyTransaction };
+const isUserAuthenticated = async (userAddress) => {
+    try {
+        const result = await contract.methods.isAuthenticated(userAddress).call();
+        return result;
+    } catch (error) {
+        console.error('Error checking user authentication:', error);
+        return false;
+    }
+};
+
+module.exports = { authenticateUser, isUserAuthenticated };
