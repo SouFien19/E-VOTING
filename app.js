@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
+const candidateRoutes = require('./routes/candidate');
+const voterRoutes = require('./routes/voter');
 const middleware = require('./middleware/auth');
 
 dotenv.config();
@@ -13,13 +15,14 @@ const app = express();
 
 // Middleware to parse JSON requests
 app.use(express.json());
-
-// Use authentication routes
-app.use('/api/auth', authRoutes);
-
-// Error handling middleware
 app.use(middleware.errorHandler);
 
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/candidates', candidateRoutes);
+app.use('/api/voter', voterRoutes);
+
+// Connect to the database
 mongoose.connect(MONGODB_URI)
 .then(() => {
     console.log('Connected to the database');
