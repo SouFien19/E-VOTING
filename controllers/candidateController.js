@@ -1,26 +1,25 @@
-const Candidacy = require('../models/Candidacy');
+const Candidate = require('../models/Candidate');
 
-exports.createCandidacy = async (req, res) => {
+// Submit a new candidate
+exports.submitCandidate = async (req, res) => {
+    const { name, symbol, flag } = req.body;
+
     try {
-        const { position } = req.body;
+        const candidate = new Candidate({ name, symbol, flag });
+        await candidate.save();
 
-        const candidacy = new Candidacy({
-            candidate: req.user.id,
-            position,
-        });
+        res.status(201).json({ message: 'Candidate submitted successfully', candidate });
+    } catch (error) {
+        res.status(500).json({ message: 'Error submitting candidate', error });
+    }
+};
 
-        await candidacy.save();
-
-        res.status(201).json({
-            success: true,
-            message: 'Candidacy created successfully',
-            data: candidacy,
-        });
-    } catch (err) {
-        console.error('Error creating candidacy:', err);
-        res.status(500).json({
-            success: false,
-            message: 'Server error. Please try again later.',
-        });
+// Get all candidates
+exports.getCandidates = async (req, res) => {
+    try {
+        const candidates = await Candidate.find();
+        res.status(200).json(candidates);
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving candidates', error });
     }
 };

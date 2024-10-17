@@ -1,37 +1,28 @@
-const Vote = require('../models/Vote');
-const Candidacy = require('../models/Candidacy');
+const { vote, getVotesCount } = require('../blockchain/web3'); // Ensure this is correct
 
-exports.voteForCandidate = async (req, res) => {
+// Cast a vote
+exports.castVote = async (req, res) => {
+    const { candidateId } = req.body;
+    
     try {
-        const { candidateId } = req.body;
+        const voterAccount = req.user.id; // Assuming you have the user's ID from the token
 
-        // Check if the candidate exists
-        const candidateCandidacy = await Candidacy.findOne({ candidate: candidateId });
-        if (!candidateCandidacy) {
-            return res.status(404).json({
-                success: false,
-                message: 'Candidate not found',
-            });
-        }
+        await vote(candidateId, voterAccount);
+        
+        res.status(200).json({ message: "Vote cast successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error casting vote", error });
+    }
+};
 
-        // Create a new vote
-        const vote = new Vote({
-            voter: req.user.id,
-            candidate: candidateId,
-        });
+// View results for a specific candidate
+exports.viewResults = async (req, res) => {
+    const { candidateId } = req.query;
 
-        await vote.save();
-
-        res.status(201).json({
-            success: true,
-            message: 'Vote cast successfully',
-            data: vote,
-        });
-    } catch (err) {
-        console.error('Error casting vote:', err);
-        res.status(500).json({
-            success: false,
-            message: 'Server error. Please try again later.',
-        });
+    try {
+        const votesCount = await getVotesCount(candidateId);
+        res.status(200).json({ votesCount });
+    } catch (error) {
+        res.status(500).json({ message: "Error retrieving results", error });
     }
 };

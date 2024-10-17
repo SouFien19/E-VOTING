@@ -1,38 +1,36 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const authRoutes = require('./routes/auth');
-const candidateRoutes = require('./routes/candidate');
-const voterRoutes = require('./routes/voter');
-const middleware = require('./middleware/auth');
+const bodyParser = require('body-parser');
+require('dotenv').config(); // Load environment variables
 
-dotenv.config();
+// Import routes
+const adminRoutes = require('./routes/adminRoutes');
+const candidateRoutes = require('./routes/candidateRoutes');
+const voterRoutes = require('./routes/voterRoutes');
 
-const MONGODB_URI = process.env.MONGODB_URI; 
-const PORT = process.env.PORT || 5000;
+const resultsRoutes = require('./routes/resultsRoutes');
+const authRoutes = require('./routes/authRoutes'); // Import auth routes
+const { errorHandler } = require('./middleware/authMiddleware');
 
 const app = express();
+app.use(bodyParser.json());
 
-// Middleware to parse JSON requests
-app.use(express.json());
-app.use(middleware.errorHandler);
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log("MongoDB connected"))
+    .catch(err => console.log(err));
 
-// Routes
-app.use('/api/auth', authRoutes);
+// Initialize Web3 and contract instanc
+// Use routes
+app.use('/api/admin', adminRoutes);
 app.use('/api/candidates', candidateRoutes);
-app.use('/api/voter', voterRoutes);
+app.use('/api/voters', voterRoutes);
+app.use('/api/results', resultsRoutes);
+app.use('/api/auth', authRoutes); // Use auth routes
 
-// Connect to the database
-mongoose.connect(MONGODB_URI)
-.then(() => {
-    console.log('Connected to the database');
-    // Start the server only after the database connection is established
-    app.listen(PORT, 'localhost', () => {
-        console.log(`Server is running on http://localhost:${PORT}`);
-    });
-})
-.catch((error) => {
-    console.error('Error connecting to the database:', error);
-    // Optionally: Exit the process if the database connection fails
-    process.exit(1);
-});
+// Global error handling middleware
+app.use(errorHandler);
+
+// Start the server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
