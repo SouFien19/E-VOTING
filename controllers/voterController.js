@@ -1,4 +1,4 @@
-const { vote, getVotesCount } = require('../blockchain/web3'); // Ensure this is correct
+const { vote, getVotesCount } = require('../security/blockchain/web3'); // Ensure this is correct
 
 // Cast a vote
 exports.castVote = async (req, res) => {

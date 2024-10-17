@@ -9,7 +9,7 @@ const candidateRoutes = require('./routes/candidateRoutes');
 const voterRoutes = require('./routes/voterRoutes');
 
 const resultsRoutes = require('./routes/resultsRoutes');
-const authRoutes = require('./routes/authRoutes'); // Import auth routes
+const authRoutes = require('./routes/authRoutes'); 
 const { errorHandler } = require('./middleware/authMiddleware');
 
 const app = express();
@@ -20,7 +20,6 @@ mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log("MongoDB connected"))
     .catch(err => console.log(err));
 
-// Initialize Web3 and contract instanc
 // Use routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/candidates', candidateRoutes);
